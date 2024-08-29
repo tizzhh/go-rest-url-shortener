@@ -5,5 +5,10 @@ http_server:
   timeout: 4s
   shutdown_timeout: 6s
   idle_timeout: 60s
-  user: "admin"
+  user: "admin@gmail.com"
   password: "admin"
+clients:
+  sso:
+    address: 'localhost:8082'
+    timeout: 10s
+    retries_count: 3

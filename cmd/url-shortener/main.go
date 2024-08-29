@@ -7,11 +7,13 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	ssogrpc "url-shortener/internal/clients/sso/grpc"
 	"url-shortener/internal/config"
 	"url-shortener/internal/http-server/handlers/url/delete"
 	"url-shortener/internal/http-server/handlers/url/redirect"
 	"url-shortener/internal/http-server/handlers/url/save"
 	mwLogger "url-shortener/internal/http-server/middleware/logger"
+	"url-shortener/internal/http-server/middleware/sso"
 	"url-shortener/internal/storage/sqlite"
 	sl "url-shortener/pkg/logger/slog"
 
@@ -23,6 +25,18 @@ func main() {
 	cfg := config.MustLoad()
 	log := sl.GetLogger()
 	log.Info("starting url-shortener", slog.String("env", cfg.Env))
+
+	ssoClient, err := ssogrpc.New(
+		context.Background(),
+		log,
+		cfg.Clients.SSO.Address,
+		cfg.Clients.SSO.Timeout,
+		cfg.Clients.SSO.RetriesCount,
+	)
+	if err != nil {
+		log.Error("failed to init sso client", sl.Err(err))
+		os.Exit(1)
+	}
 
 	storage, err := sqlite.New(cfg.StoragePath)
 	if err != nil {
@@ -38,9 +52,7 @@ func main() {
 	router.Use(middleware.URLFormat)
 
 	router.Route("/url", func(r chi.Router) {
-		r.Use(middleware.BasicAuth("url-shortener", map[string]string{
-			cfg.HTTPServer.User: cfg.HTTPServer.Password,
-		}))
+		r.Use(sso.IsRequestAdmin("url-shortener", ssoClient, cfg.Clients.SSO.Timeout))
 		r.Post("/", save.NewURL(storage))
 		r.Delete("/{alias}", delete.DeleteURL(storage))
 	})

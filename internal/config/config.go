@@ -14,6 +14,8 @@ type Config struct {
 	StoragePath string `yaml:"storage_path" env-required:"true"`
 	AliasLength int    `yaml:"alias_length" env-default:"6"`
 	HTTPServer  `yaml:"http_server"`
+	Clients     ClientsConfig `yaml:"clients"`
+	AppSecret   string        `yaml:"app_secret" env-required:"true" env:"APP_SECRET"`
 }
 
 type HTTPServer struct {
@@ -23,6 +25,16 @@ type HTTPServer struct {
 	ShutdownTimeout time.Duration `yaml:"shutdown_timeout" env-default:"6s"`
 	User            string        `yaml:"user" env-required:"true"`
 	Password        string        `yaml:"password" env-required:"true"`
+}
+
+type Client struct {
+	Address      string        `yaml:"address"`
+	Timeout      time.Duration `yaml:"timeout"`
+	RetriesCount int           `yaml:"retries_count"`
+}
+
+type ClientsConfig struct {
+	SSO Client `yaml:"sso"`
 }
 
 var cfg *Config
