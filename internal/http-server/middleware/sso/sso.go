@@ -7,11 +7,13 @@ import (
 	"net/http"
 	"strings"
 	"time"
-
-	ssogrpc "url-shortener/internal/clients/sso/grpc"
 )
 
-func IsRequestAdmin(realm string, ssoClient *ssogrpc.Client, timeout time.Duration) func(next http.Handler) http.Handler {
+type IsAdminChecker interface {
+	IsAdmin(ctx context.Context, email string) (bool, error)
+}
+
+func IsRequestAdmin(realm string, ssoClient IsAdminChecker, timeout time.Duration) func(next http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			auth := r.Header.Get("Authorization")
