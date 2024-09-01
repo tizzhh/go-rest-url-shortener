@@ -22,7 +22,7 @@ type Request struct {
 }
 
 type Response struct {
-	resp.Reponse
+	resp.Response
 	Alias string `json:"alias,omitempty"`
 }
 
@@ -85,6 +85,6 @@ func NewURL(urlSaver URLSaver) http.HandlerFunc {
 
 		log.Info("url added", slog.String("url", req.URL))
 
-		render.JSON(w, r, Response{Reponse: resp.OK(), Alias: alias})
+		render.JSON(w, r, Response{Response: resp.OK(), Alias: alias})
 	}
 }
