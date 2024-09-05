@@ -8,6 +8,8 @@ A go-based url-shortener with authentication.
 - `make`
 - `./url-shortener`
 
+for auth please refer to https://github.com/tizzhh/auth-grpc-service
+
 ## Requirements
 
 - Go 1.22.5
